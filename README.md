@@ -31,7 +31,9 @@ Functions
 
 To Do: Create a naming schematic for the functions such that all functions which interface with the OpenFEC API use the "query\_" prefix and all functions which plot data use the "plot\_" prefix.
 
-\[x\] choose\_cand \[x\] query\_contributions\_all \[x\] query\_itemized\_contributions \[x\] plot\_donations \[x\] query\_candidate\_list \[x\] query\_openfec \[x\] plot\_cities \[x\] plot\_occupations
+\[x\] choose\_cand: Selects candidates from a list \[x\] query\_contributions\_all: Find all individual donations to candidate
+\[x\] query\_itemized\_contributions: Finds individual contributions associated with a list of candidates \[x\] plot\_avg\_donation: Plot the average donation for candidates over the time window \[x\] plot\_cum\_donation: Plot the cummulative donation for candidates over the time window \[x\] query\_candidate\_list: Search for political candidates in FEC
+\[x\] query\_openfec: Make a request to the OpenFEC API \[x\] plot\_top\_cities: Plot zipcode level data for cities with the most donations \[x\] plot\_occupations: Plot occputation level data for donations
 
 Example: 2018 Senate race between Whitehouse & Flanders
 =======================================================

@@ -37,14 +37,15 @@ library(fecScrape)
 
 To Do: Create a naming schematic for the functions such that all functions which interface with the OpenFEC API use the "query_" prefix and all functions which plot data use the "plot_" prefix. 
 
-  [x] choose_cand
-  [x] query_contributions_all
-  [x] query_itemized_contributions
-  [x] plot_donations
-  [x] query_candidate_list
-  [x] query_openfec
-  [x] plot_cities
-  [x] plot_occupations
+  [x] choose_cand: Selects candidates from a list
+  [x] query_contributions_all: Find all individual donations to candidate  
+  [x] query_itemized_contributions: Finds individual contributions associated with a list of candidates
+  [x] plot_avg_donation: Plot the average donation for candidates over the time window
+  [x] plot_cum_donation: Plot the cummulative donation for candidates over the time window
+  [x] query_candidate_list: Search for political candidates in FEC  
+  [x] query_openfec: Make a request to the OpenFEC API
+  [x] plot_top_cities: Plot zipcode level data for cities with the most donations
+  [x] plot_occupations: Plot occputation level data for donations
 
 # Example: 2018 Senate race between Whitehouse & Flanders
 
