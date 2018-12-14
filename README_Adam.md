@@ -3,9 +3,9 @@
 In this Folder you will place all of your final group projects. Please complete the following steps.
 
 1. List the name of all Group Members below:
-    a. ________________________________
-    b. ________________________________
-    c. ________________________________
+    a. Pablo
+    b. Gabri
+    c. Joey Heffner
     d. ________________________________
     e. ________________________________
 2. Change the name of the R Package folder to be the name of your R package. 
