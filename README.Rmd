@@ -37,6 +37,14 @@ library(fecScrape)
 
 To Do: Create a naming schematic for the functions such that all functions which interface with the OpenFEC API use the "query_" prefix and all functions which plot data use the "plot_" prefix. 
 
+Table Header | Second Header
+------------- | -------------
+query_candidate | This function returns the list of all candidates that run in the 2018 Senate Election for a given state.  
+Cell 3 | Cell 4 
+
+
+
+
   [x] choose_cand: Selects candidates from a list
   [x] query_contributions_all: Find all individual donations to candidate  
   [x] query_itemized_contributions: Finds individual contributions associated with a list of candidates
