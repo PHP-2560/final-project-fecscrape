@@ -39,23 +39,17 @@ functions which interface with the OpenFEC API use the “query\_” prefix
 and all functions which plot data use the “plot\_”
 prefix.
 
-| Table Header     | Second Header                                                                                            |
-| ---------------- | -------------------------------------------------------------------------------------------------------- |
-| query\_candidate | This function returns the list of all candidates that run in the 2018 Senate Election for a given state. |
-| Cell 3           | Cell 4                                                                                                   |
-
-\[x\] choose\_cand: Selects candidates from a list \[x\]
-query\_contributions\_all: Find all individual donations to candidate  
-\[x\] query\_itemized\_contributions: Finds individual contributions
-associated with a list of candidates \[x\] plot\_avg\_donation: Plot the
-average donation for candidates over the time window \[x\]
-plot\_cum\_donation: Plot the cummulative donation for candidates over
-the time window \[x\] query\_candidate\_list: Search for political
-candidates in FEC  
-\[x\] query\_openfec: Make a request to the OpenFEC API \[x\]
-plot\_top\_cities: Plot zipcode level data for cities with the most
-donations \[x\] plot\_occupations: Plot occputation level data for
-donations
+| Function Name                  | Description                                                                                                                                                                                                                                                |
+| ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| query\_candidate\_list         | This function returns the list of all candidates that run in the 2018 Senate Election for a given state.                                                                                                                                                   |
+| query\_choose\_cand            | This function allows the user to manually pick 2 opposing candidates (1 Republican and 1 Democrat) from the list retrieved using *query\_candidate\_list* for comparison.                                                                                  |
+| query\_contributions\_all      | This function retrieves all individual level contributions for every candidate in the list provided.                                                                                                                                                       |
+| query\_itemized\_contributions | This function opreates within *query\_contributions\_all* and it retrieves individual contributions when provided with eahc candidate’s principal committees id                                                                                            |
+| query\_openfec                 | This function srapes the FEC websites using FEC aPIs. It operates within the *query\_itemized\_contributions* and the *query\_candidate\_all* higher level functions                                                                                       |
+| plot\_avg\_donation            | This functions elaborates the individual contributions data from the two main candidates selected and plots the average daily donations.                                                                                                                   |
+| plot\_cum\_donation            | This functions elaborates the individual contributions data from the two main candidates selected and plots the cumulative daily donations.                                                                                                                |
+| plot\_top\_cities              | This function plot a graph bar showing individual donations’ origin for the top *n* cities for each of the opposing candiates.                                                                                                                             |
+| plot\_occupations              | This function plot a percentage stacked bar plot showing the shares of the top *n* individual contributors’ occupations. All remaning occupations are automatically grouped in the “others” category (up to 8 different top occupations can be selected.). |
 
 # Example: 2018 Senate race between Whitehouse & Flanders
 

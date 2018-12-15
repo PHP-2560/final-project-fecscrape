@@ -37,23 +37,18 @@ library(fecScrape)
 
 To Do: Create a naming schematic for the functions such that all functions which interface with the OpenFEC API use the "query_" prefix and all functions which plot data use the "plot_" prefix. 
 
-Table Header | Second Header
+Function Name | Description
 ------------- | -------------
-query_candidate | This function returns the list of all candidates that run in the 2018 Senate Election for a given state.  
-Cell 3 | Cell 4 
+query_candidate_list | This function returns the list of all candidates that run in the 2018 Senate Election for a given state.  
+query_choose_cand | This function allows the user to manually pick 2 opposing candidates (1 Republican and 1 Democrat) from the list retrieved using  _query_candidate_list_ for comparison.
+query_contributions_all | This function retrieves all individual level contributions for every candidate in the list provided. 
+query_itemized_contributions | This function opreates within _query_contributions_all_ and it retrieves individual contributions when provided with eahc candidate's principal committees id
+query_openfec | This function srapes the FEC websites using FEC aPIs. It operates within the _query_itemized_contributions_ and the _query_candidate_all_ higher level functions
+plot_avg_donation | This functions elaborates the individual contributions data from the two main candidates selected and plots the average daily donations. 
+plot_cum_donation | This functions elaborates the individual contributions data from the two main candidates selected and plots the cumulative daily donations.
+plot_top_cities | This function plot a graph bar showing individual donations' origin for the top _n_ cities for each of the opposing candiates.
+plot_occupations | This function plot a percentage stacked bar plot showing the shares of the top _n_ individual contributors' occupations. All remaning occupations are automatically grouped in the "others" category (up to 8 different top occupations can be selected.).
 
-
-
-
-  [x] choose_cand: Selects candidates from a list
-  [x] query_contributions_all: Find all individual donations to candidate  
-  [x] query_itemized_contributions: Finds individual contributions associated with a list of candidates
-  [x] plot_avg_donation: Plot the average donation for candidates over the time window
-  [x] plot_cum_donation: Plot the cummulative donation for candidates over the time window
-  [x] query_candidate_list: Search for political candidates in FEC  
-  [x] query_openfec: Make a request to the OpenFEC API
-  [x] plot_top_cities: Plot zipcode level data for cities with the most donations
-  [x] plot_occupations: Plot occputation level data for donations
 
 # Example: 2018 Senate race between Whitehouse & Flanders
 
