@@ -55,10 +55,10 @@ prefix.
 
 ## Step 1: Scrape candidates running in an election of interest.
 
-For our example, we will focus on the recent 2018 Sentate race in West
-Virginia between Sheldon Whitehouse and Robert Flanders of Rhode Island.
-We wanted to choose Texas, since Beto and Cruz raised tens of millions
-of dollars, but the scraping takes a very long time\!
+For our example, we will focus on the recent 2018 Sentate race between
+Sheldon Whitehouse and Robert Flanders of Rhode Island. We wanted to
+choose Texas, since Beto and Cruz raised tens of millions of dollars,
+but the scraping takes a very long time\!
 
 ``` r
 # Find and select candidates
