@@ -35,7 +35,6 @@ library(fecScrape)
 
 # Functions
 
-To Do: Create a naming schematic for the functions such that all functions which interface with the OpenFEC API use the "query_" prefix and all functions which plot data use the "plot_" prefix. 
 
 Function Name | Description
 ------------- | -------------
