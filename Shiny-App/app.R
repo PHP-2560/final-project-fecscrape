@@ -8,7 +8,7 @@
 library(shiny)
 
 # load basefile
-# basefile <- readRDS("data/basefile.Rds")
+# file = load("./bulkdata/data/contributions_AZ")
 
 #load codebooks
 # codebook <- read_excel("data/codebook.xlsx")
@@ -20,16 +20,35 @@ library(shiny)
 # UI
 #**************************************************************
 
-
 # Begin fluidPage
 ui = fluidPage(
-  sliderInput(inputId = "num",
-              label = "Choose a Number",
-              value = 1, min = 1, max = 100),
-  plotOutput("hist")
-    
-  )
 
+  titlePanel("FEC individual donations"),
+  
+  sidebarLayout(
+    
+    sidebarPanel("our inputs will go here",
+      sliderInput(inputId = "num",
+                  label = "Choose a Number",
+                  value = 1, min = 1, max = 100
+      ),
+      radioButtons(inputId = "state",
+                   label = "Choose a State",
+                   c("Rhode Island" = "RI",
+                     "Wyoming" = "WY")
+      )
+    ),
+    mainPanel("the results will go here",
+      plotOutput("hist")
+    )
+  )
+)
+
+#**************************************************************
+# SERVER
+#**************************************************************
+
+# Begin server
 server = function(input, output) {
   output$hist = renderPlot({
     hist(rnorm(input$num))
