@@ -8,16 +8,16 @@
 "DE" GABRI
 "FL" GABRI
 "GA" GABRI
-"HI"
-"ID"
-"IL"
-"IN"
-"IA"
-"KS"
-"KY"
-"LA"
-"ME"
-"MD"
+"HI" PABLO
+"ID" PABLO
+"IL" PABLO
+"IN" PABLO
+"IA" PABLO
+"KS" GABRI
+"KY" GABRI
+"LA" GABRI
+"ME" GABRI
+"MD" GABRI
 "MA"
 "MI"
 "MN"
