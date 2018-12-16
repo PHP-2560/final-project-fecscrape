@@ -12,7 +12,7 @@ lapply(required_packages, library, character.only = TRUE)
 my_api <- "jFTYk34OsWkFoEHLcUDa7G1Ax4GCyhJyAgCwB8oz"
 # statelist <-c("AL","AK","AZ","AR","CA","CO","CT","DE","FL","GA","HI","ID","IL","IN","IA","KS","KY","LA","ME","MD","MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ","NM","NY","NC","ND","OH","OK","OR","PA","RI","SC","SD","TN","TX","UT","VT","VA","WA","WV","WI","WY")
 
-statelist <- c("CT","DE","FL","GA")
+statelist <- c("MA","MI","MN","MS","MO","MT")
 
 for (s in statelist) {
    state = s
