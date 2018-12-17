@@ -51,9 +51,12 @@ ui = fluidPage(
     
     
     mainPanel(
+      h3("Donation Descriptives"),
       # Add descriptive table for number donations and total per party
       dataTableOutput('donations_table'),
       
+      h3("Average Donation Trends"),
+      h5("*Note*: Some candidates don't have sufficient data to draw simpleLoess fits"),
       plotOutput("avg_trends"),
       # Add y-axis range slider
       sliderInput("Y_axis_range", 
@@ -63,7 +66,7 @@ ui = fluidPage(
                   pre = "$", sep = ",",
                   dragRange = TRUE),
       
-      
+      h3("Cumulative Donation Trends"),
       plotOutput("cum_trends"), 
       # Add y-axis range slider
       sliderInput("Y_axis_range_cum", 
@@ -73,6 +76,8 @@ ui = fluidPage(
                   pre = "$", sep = ",",
                   dragRange = TRUE),
       
+      h3("Top Cities Donating"),
+      h5("*Note*: This graph only plots the two most fundraising-successful DEM and REP candidates"),
       plotOutput("top_cities"),
       sliderInput(inputId = "num_cities", 
                   label = "Select the number of top cities to display",
@@ -80,6 +85,8 @@ ui = fluidPage(
                   max = 10, 
                   value = 2), 
       
+      h3("Donations by Occupations"),
+      h5("*Note*: This graph only plots the two most fundraising-successful DEM and REP candidates"),
       plotOutput("top_occ"),
       sliderInput(inputId = "num_occ", 
                   label = "Select the number of top occupations to display",
@@ -260,15 +267,32 @@ server = function(input, output) {
   
   output$top_cities <- renderPlot({
     plot_top_cities <- function(n, df) {
+      
+      # limit plot to top two candidates
+      top_rep_candidate <- df %>%
+        filter(party == "REP") %>%
+        group_by(candidate) %>%
+        summarise(Total = sum(contribution_receipt_amount)) %>%
+        arrange(desc(Total)) %>%
+        filter(row_number() == 1) # only take top candidate
+
+      top_dem_candidate <- df %>%
+        filter(party == "DEM") %>%
+        group_by(candidate) %>%
+        summarise(Total = sum(contribution_receipt_amount)) %>%
+        arrange(desc(Total)) %>%
+        filter(row_number() == 1) # only take top candidate
+      
       #aggregate by city
       citydf <- df %>%
+        filter(candidate == top_dem_candidate$candidate | candidate == top_rep_candidate$candidate) %>% # only top 2
         mutate(city_state = paste0(contributor_city, ", ", contributor_state)) %>%
         group_by(candidate, city_state) %>%
         summarize(party = first(party) , count = n(), total = sum(contribution_receipt_amount, na.rm = T), average = mean(contribution_receipt_amount, na.rm = T), sd = sd(contribution_receipt_amount, na.rm = T), min = min(contribution_receipt_amount, na.rm = T), max = max(contribution_receipt_amount, na.rm = T)) %>%
         arrange(desc(total)) %>%
         top_n(n, total)
       
-      citydf
+      #citydf
       
       ## GRAPH
       # set theme
@@ -320,14 +344,31 @@ server = function(input, output) {
       
       if (n >= 8 ) n = 8
       
+      # limit plot to top two candidates
+      top_rep_candidate <- df %>%
+        filter(party == "REP") %>%
+        group_by(candidate) %>%
+        summarise(Total = sum(contribution_receipt_amount)) %>%
+        arrange(desc(Total)) %>%
+        filter(row_number() == 1) # only take top candidate
+      
+      top_dem_candidate <- df %>%
+        filter(party == "DEM") %>%
+        group_by(candidate) %>%
+        summarise(Total = sum(contribution_receipt_amount)) %>%
+        arrange(desc(Total)) %>%
+        filter(row_number() == 1) # only take top candidate
+      
       #compute total donations by party
       totdon<-df %>%
+        filter(candidate == top_dem_candidate$candidate | candidate == top_rep_candidate$candidate) %>% # only top 2
         group_by(candidate) %>%
         summarize(count1 = n(), tot = sum(contribution_receipt_amount))
       #totdon
       
       #compute total donation for top 5 occupations for each party
       tottop<-df %>%
+        filter(candidate == top_dem_candidate$candidate | candidate == top_rep_candidate$candidate) %>% # only top 2
         mutate(city_state = paste0(contributor_city, ", ", contributor_state)) %>%
         group_by(candidate, contributor_occupation) %>%
         summarize(count = n(), total_donations = sum(contribution_receipt_amount)) %>%
@@ -347,6 +388,7 @@ server = function(input, output) {
       
       #prepare summary stats
       topocc_data<-df %>%
+        filter(candidate == top_dem_candidate$candidate | candidate == top_rep_candidate$candidate) %>% # only top 2
         group_by(candidate, contributor_occupation) %>%
         summarize(party = first(party) , count = n(), total = sum(contribution_receipt_amount, na.rm = T), average = mean(contribution_receipt_amount, na.rm = T), sd = sd(contribution_receipt_amount, na.rm = T), min = min(contribution_receipt_amount, na.rm = T), max = max(contribution_receipt_amount, na.rm = T)) %>%
         arrange(desc(total)) %>%
