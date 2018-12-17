@@ -1,4 +1,4 @@
-#SHINY APP
+# fecScrape Shiny App
 
 #**************************************************************
 # APP SETUP
@@ -11,7 +11,6 @@ library(dplyr)
 library(scales)
 library(shinythemes)
 
-# load(paste0("./bulkdata/data/contributoins_","CA"))
 #**************************************************************
 # UI
 #**************************************************************
@@ -19,36 +18,58 @@ library(shinythemes)
 # Begin fluidPage
 ui = fluidPage(
   theme = shinytheme("cerulean"),
-
   titlePanel("FEC individual donations"),
   
-  
   sidebarLayout(
-    
     sidebarPanel("our inputs will go here",
+                 selectInput(
+                   inputId = "state",
+                   label = "Choose a State",
+                   c("AL","AK","AZ","AR","CA","CO","CT","DE","FL","GA","HI","ID","IL","IN","IA","KS","KY","LA","ME","MD","MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ","NM","NY","NC","ND","OH","OK","OR","PA","RI","SC","SD","TN","TX","UT","VT","VA","WA","WV","WI","WY")
+                 ),
                  
-      selectInput(
-        inputId = "state",
-        label = "Choose a State",
-        c("AL","AK","AZ","AR","CA","CO","CT","DE","FL","GA","HI","ID","IL","IN","IA","KS","KY","LA","ME","MD","MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ","NM","NY","NC","ND","OH","OK","OR","PA","RI","SC","SD","TN","TX","UT","VT","VA","WA","WV","WI","WY")
-      ),
-      
-      uiOutput(outputId = "candlist_dem"),
-      uiOutput(outputId = "candlist_rep"),
-      
-      dateRangeInput(
-        inputId = "daterange",
-        label = "Date range input: yyyy-mm-dd",
-        start = "2017-01-01",
-        end = "2018-11-06"
-      )
+                 uiOutput(outputId = "candlist_dem"),
+                 uiOutput(outputId = "candlist_rep"),
+                 
+                 # Add x-axis range slider
+                 sliderInput("X_axis_range", 
+                             "Choose date range:", 
+                             min = as.Date("2017-01-01", "%Y-%m-%d"), 
+                             max = as.Date("2018-12-01", "%Y-%m-%d"), 
+                             value = c(as.Date("2018-01-01", "%Y-%m-%d"), 
+                                       as.Date("2018-12-01", "%Y-%m-%d")), 
+                             animate = TRUE,
+                             dragRange = TRUE)
+                 
+                 #dateRangeInput(
+                 #   inputId = "daterange",
+                #   label = "Date range input: yyyy-mm-dd",
+                #   start = "2017-01-01",
+                #   end = "2018-11-06"
+                # )
     ),
-  
+    
     
     mainPanel(
       plotOutput("avg_trends"),
+      # Add y-axis range slider
+      sliderInput("Y_axis_range", 
+                  "Choose y-axis range:", 
+                  min = 0, max = 10000, 
+                  value = c(0, 5000), step = 1000,
+                  pre = "$", sep = ",",
+                  dragRange = TRUE),
+      
+      
       plotOutput("cum_trends"), 
-    
+      # Add y-axis range slider
+      sliderInput("Y_axis_range_cum", 
+                  "Choose y-axis range:", 
+                  min = 0, max = 10000000, 
+                  value = c(0, 5000000), step = 50000,
+                  pre = "$", sep = ",",
+                  dragRange = TRUE),
+      
       plotOutput("top_cities"),
       sliderInput(inputId = "num_cities", 
                   label = "Select the number of top cities to display",
@@ -62,7 +83,7 @@ ui = fluidPage(
                   min = 1, 
                   max = 8, 
                   value = 2)
-
+      
     )
   )
 )
@@ -92,10 +113,10 @@ server = function(input, output) {
     load(paste0("./bulkdata/data/contributoins_",input$state))
     df[df$candidate %in% c(input$candidates_dem, input$candidates_rep), ]
   })
-
+  
   output$avg_trends = renderPlot({
     plot_avg_donation <- function(df) {
-
+      
       # Initialize graph attributes
       graph_theme = theme_bw(base_size = 12) +
         theme(panel.grid.major = element_line(size = .1, color = "grey"), # Increase size of gridlines
@@ -103,40 +124,44 @@ server = function(input, output) {
               axis.text.x = element_text(angle = 90, hjust = 1), #Rotate text
               text = element_text(size = 12)) # Increase the font size
       group_colors = c("#377EB8", "#E41A1C") # blue, red
-
+      
       # Get dates
       dates <- df %>% select(contribution_receipt_date) %>%  mutate(date = as.Date(contribution_receipt_date)) %>%
         summarise(min = min(date), max = max(date))
       title <- paste("From", input$daterange[1], "To", input$daterange[2])
-
+      
       # Donation data cleanup: clean
       data_clean = df %>%
         mutate(amount = contribution_receipt_amount, date = as.Date(contribution_receipt_date)) %>%
         select(amount, date, party) %>%
         mutate(date = as.Date(date))
-
+      
       # Donation data cleanup: average daily
       data_average_daily <- data_clean %>%
         group_by(party, date) %>%
         summarise(Mean = mean(amount), SD = sd(amount), N = n(), SE = SD / sqrt(N), na.rm = TRUE) %>%
-        filter(date >= input$daterange[1] & date <= input$daterange[2] )
-
+        filter(date >= input$X_axis_range[1] & date <= input$X_axis_range[2] ) # changed input
+      
+      # Y-axis range
+      Y_axis_range <- c(input$Y_axis_range[1], input$Y_axis_range[2])
+      
       plot_average_daily <- ggplot(data_average_daily,
                                    aes(x = date, y = Mean, group = party, color = party)) +
         # geom_point() +
         geom_smooth(method = "loess") + # loess
-        xlab(label = "Date") +
-        scale_y_continuous(name = "Average Donation per Contributor") +
+        xlab(label = "Date") + 
+        ylab(label = "Average Donation per Contributor") + 
+        coord_cartesian(ylim = Y_axis_range) + # prevents errors if geom_smooth lower than 0
         ggtitle(paste("Senate Donations", title, "\nDaily")) +
         scale_color_manual(values = group_colors) +
         graph_theme
-
+      
       return(plot_average_daily)
     }
-
+    
     plot_avg_donation(data_trend())
   })
-
+  
   
   output$cum_trends = renderPlot({
     plot_cum_donation <- function(df) {
@@ -163,16 +188,20 @@ server = function(input, output) {
       # Donation data cleanup: cumulative
       data_cumulative = data_clean %>%
         group_by(party) %>%
-        filter(date >= input$daterange[1] & date <= input$daterange[2]) %>%
+        filter(date >= input$X_axis_range[1] & date <= input$X_axis_range[2]) %>% # changed
         arrange(date) %>%
         mutate(cum_donation = cumsum(amount))
+      
+      # Y-axis range
+      Y_axis_range_cum <- c(input$Y_axis_range_cum[1], input$Y_axis_range_cum[2])
       
       plot_cum <- ggplot(data_cumulative,
                          aes(x = date, y = cum_donation, group = party, color = party)) + 
         geom_line() + 
         #geom_smooth(method = "lm", size = 2) + # loess
         xlab(label = "Date") +
-        scale_y_continuous(name = "Cummulative Donation per Party Candidate") +    
+        ylab(label = "Cummulative Donation per Party Candidate") + 
+        coord_cartesian(ylim = Y_axis_range_cum) +
         ggtitle(paste("Senate Donations", title, "\nDaily")) + 
         scale_color_manual(values = group_colors) +
         graph_theme 
@@ -244,7 +273,7 @@ server = function(input, output) {
     plot_occupations <- function(n, df) {
       
       if (n >= 8 ) n = 8
- 
+      
       #compute total donations by party
       totdon<-df %>%
         group_by(candidate) %>%
@@ -321,7 +350,7 @@ server = function(input, output) {
     plot_occupations(input$num_occ,data_trend())
   })
   
-     
+  
 }
 
 shinyApp(ui = ui, server = server)
