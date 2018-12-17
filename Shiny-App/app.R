@@ -10,6 +10,7 @@ library(ggplot2)
 library(dplyr)
 library(scales)
 library(shinythemes)
+library(DT) # for datatables 
 
 #**************************************************************
 # UI
@@ -51,10 +52,13 @@ ui = fluidPage(
     
     
     mainPanel(
+      # Add descriptive table for number donations and total per party
+      dataTableOutput('donations_table'),
+      
       plotOutput("avg_trends"),
       # Add y-axis range slider
       sliderInput("Y_axis_range", 
-                  "Choose y-axis range:", 
+                  "Choose Average Donation (y-axis) range:", 
                   min = 0, max = 10000, 
                   value = c(0, 5000), step = 1000,
                   pre = "$", sep = ",",
@@ -64,7 +68,7 @@ ui = fluidPage(
       plotOutput("cum_trends"), 
       # Add y-axis range slider
       sliderInput("Y_axis_range_cum", 
-                  "Choose y-axis range:", 
+                  "Choose Cumulative Donation (y-axis) range:", 
                   min = 0, max = 10000000, 
                   value = c(0, 5000000), step = 50000,
                   pre = "$", sep = ",",
@@ -114,6 +118,22 @@ server = function(input, output) {
     df[df$candidate %in% c(input$candidates_dem, input$candidates_rep), ]
   })
   
+  output$donations_table <- renderDataTable({
+    donations_data_table <- function(df) {
+      
+      # Donation data cleanup: clean
+      donation_table <- df %>%
+        group_by(party) %>%
+        summarise(num_donations = n(), 
+                  total_donations_amount = sum(contribution_receipt_amount), 
+                  avg_donation = round((total_donations_amount / num_donations), 2)) %>%
+        mutate_at(vars(total_donations_amount:avg_donation), dollar)
+      return(donation_table)
+    }
+    table_print <- donations_data_table(data_trend())
+    datatable(table_print, options = list(dom = 't'))
+  })
+  
   output$avg_trends = renderPlot({
     plot_avg_donation <- function(df) {
       
@@ -121,27 +141,26 @@ server = function(input, output) {
       graph_theme = theme_bw(base_size = 12) +
         theme(panel.grid.major = element_line(size = .1, color = "grey"), # Increase size of gridlines
               axis.line = element_line(size = .7, color = "black"), # Increase size of axis lines
-              axis.text.x = element_text(angle = 90, hjust = 1), #Rotate text
               text = element_text(size = 12)) # Increase the font size
       group_colors = c("#377EB8", "#E41A1C") # blue, red
       
       # Get dates
       dates <- df %>% select(contribution_receipt_date) %>%  mutate(date = as.Date(contribution_receipt_date)) %>%
         summarise(min = min(date), max = max(date))
-      title <- paste("From", input$daterange[1], "To", input$daterange[2])
+      title <- paste("From", input$X_axis_range[1], "To", input$X_axis_range[2])
       
       # Donation data cleanup: clean
       data_clean = df %>%
         mutate(amount = contribution_receipt_amount, date = as.Date(contribution_receipt_date)) %>%
         select(amount, date, party) %>%
         mutate(date = as.Date(date))
-      
+
       # Donation data cleanup: average daily
       data_average_daily <- data_clean %>%
         group_by(party, date) %>%
         summarise(Mean = mean(amount), SD = sd(amount), N = n(), SE = SD / sqrt(N), na.rm = TRUE) %>%
         filter(date >= input$X_axis_range[1] & date <= input$X_axis_range[2] ) # changed input
-      
+
       # Y-axis range
       Y_axis_range <- c(input$Y_axis_range[1], input$Y_axis_range[2])
       
@@ -150,9 +169,11 @@ server = function(input, output) {
         # geom_point() +
         geom_smooth(method = "loess") + # loess
         xlab(label = "Date") + 
+        scale_x_date(labels = date_format("%b-%Y")) + # month-year
         ylab(label = "Average Donation per Contributor") + 
         coord_cartesian(ylim = Y_axis_range) + # prevents errors if geom_smooth lower than 0
-        ggtitle(paste("Senate Donations", title, "\nDaily")) +
+        scale_y_continuous(labels = dollar) +
+        ggtitle(paste("Senate Donations", title, "\nDaily Donations Data")) +
         scale_color_manual(values = group_colors) +
         graph_theme
       
@@ -170,14 +191,13 @@ server = function(input, output) {
       graph_theme = theme_bw(base_size = 12) +
         theme(panel.grid.major = element_line(size = .1, color = "grey"), # Increase size of gridlines 
               axis.line = element_line(size = .7, color = "black"), # Increase size of axis lines 
-              axis.text.x = element_text(angle = 90, hjust = 1), #Rotate text
               text = element_text(size = 12)) # Increase the font size
       group_colors = c("#377EB8", "#E41A1C") # blue, red
       
       # Get dates
       dates <- df %>% select(contribution_receipt_date) %>%  mutate(date = as.Date(contribution_receipt_date)) %>%
         summarise(min = min(date), max = max(date))
-      title <- paste("From", input$daterange[1], "To", input$daterange[2])
+      title <- paste("From", input$X_axis_range[1], "To", input$X_axis_range[2])
       
       # Donation data cleanup: clean
       data_clean = df %>% 
@@ -197,12 +217,14 @@ server = function(input, output) {
       
       plot_cum <- ggplot(data_cumulative,
                          aes(x = date, y = cum_donation, group = party, color = party)) + 
-        geom_line() + 
-        #geom_smooth(method = "lm", size = 2) + # loess
+        geom_line(size = 1.5) + 
+        #geom_smooth(method = "lm", size = 1.5, linetype = "dashed") +
         xlab(label = "Date") +
-        ylab(label = "Cummulative Donation per Party Candidate") + 
+        scale_x_date(labels = date_format("%b-%Y")) + # month-year
+        ylab(label = "Cumulative Donation per Party Candidate") + 
         coord_cartesian(ylim = Y_axis_range_cum) +
-        ggtitle(paste("Senate Donations", title, "\nDaily")) + 
+        scale_y_continuous(labels = dollar) +
+        ggtitle(paste("Senate Donations", title, "\nDaily Donations Data")) + 
         scale_color_manual(values = group_colors) +
         graph_theme 
       
