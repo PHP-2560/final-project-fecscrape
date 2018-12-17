@@ -1,0 +1,8 @@
+---
+title: "README"
+output: html_document
+---
+
+# fecScrape
+
+The fecScrape package provides functions to interface with the [OpenFEC API](https://api.open.fec.gov/developers/). OpenFEC API allows you to access funding data on candidates and committees. This package allows users to scrape individual- and aggregated-level donation data, plot these data to examine the timecourse of donation as well as geographic spread of donations, and does some basic summary statistics. 

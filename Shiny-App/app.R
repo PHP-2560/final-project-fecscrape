@@ -18,75 +18,85 @@ library(DT) # for datatables
 
 # Begin fluidPage
 ui = fluidPage(
-  theme = shinytheme("cerulean"),
+  theme = shinytheme("yeti"),
+  
+  # Application title
   titlePanel("FEC individual donations"),
   
-  sidebarLayout(
-    sidebarPanel("our inputs will go here",
-                 selectInput(
-                   inputId = "state",
-                   label = "Choose a State",
-                   c("AL","AK","AZ","AR","CA","CO","CT","DE","FL","GA","HI","ID","IL","IN","IA","KS","KY","LA","ME","MD","MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ","NM","NY","NC","ND","OH","OK","OR","PA","RI","SC","SD","TN","TX","UT","VT","VA","WA","WV","WI","WY")
-                 ),
-                 
-                 uiOutput(outputId = "candlist_dem"),
-                 uiOutput(outputId = "candlist_rep"),
-                 
-                 # Add x-axis range slider
-                 sliderInput("X_axis_range", 
-                             "Choose date range:", 
-                             min = as.Date("2017-01-01", "%Y-%m-%d"), 
-                             max = as.Date("2018-12-01", "%Y-%m-%d"), 
-                             value = c(as.Date("2018-01-01", "%Y-%m-%d"), 
-                                       as.Date("2018-12-01", "%Y-%m-%d")), 
-                             dragRange = TRUE)
-                 
-                 #dateRangeInput(
-                 #   inputId = "daterange",
-                #   label = "Date range input: yyyy-mm-dd",
-                #   start = "2017-01-01",
-                #   end = "2018-11-06"
-                # )
-    ),
+  # Tabs
+  tabsetPanel(              
+    tabPanel(title = "Intro", 
+      includeMarkdown("./fecScrape-tutorial.Rmd")),
     
-    
-    mainPanel(
-      # Add descriptive table for number donations and total per party
-      dataTableOutput('donations_table'),
-      
-      plotOutput("avg_trends"),
-      # Add y-axis range slider
-      sliderInput("Y_axis_range", 
-                  "Choose Average Donation (y-axis) range:", 
-                  min = 0, max = 10000, 
-                  value = c(0, 5000), step = 500,
-                  pre = "$", sep = ",",
-                  dragRange = TRUE),
-      
-      
-      plotOutput("cum_trends"), 
-      # Add y-axis range slider
-      sliderInput("Y_axis_range_cum", 
-                  "Choose Cumulative Donation (y-axis) range:", 
-                  min = 0, max = 10000000, 
-                  value = c(0, 5000000), step = 1000,
-                  pre = "$", sep = ",",
-                  dragRange = TRUE),
-      
-      plotOutput("top_cities"),
-      sliderInput(inputId = "num_cities", 
-                  label = "Select the number of top cities to display",
-                  min = 1, 
-                  max = 10, 
-                  value = 2), 
-      
-      plotOutput("top_occ"),
-      sliderInput(inputId = "num_occ", 
-                  label = "Select the number of top occupations to display",
-                  min = 1, 
-                  max = 8, 
-                  value = 2)
-      
+    tabPanel(title = "Analysis",
+      sidebarLayout(
+        sidebarPanel("our inputs will go here",
+                     selectInput(
+                       inputId = "state",
+                       label = "Choose a State",
+                       c("AL","AK","AZ","AR","CA","CO","CT","DE","FL","GA","HI","ID","IL","IN","IA","KS","KY","LA","ME","MD","MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ","NM","NY","NC","ND","OH","OK","OR","PA","RI","SC","SD","TN","TX","UT","VT","VA","WA","WV","WI","WY")
+                     ),
+                     
+                     uiOutput(outputId = "candlist_dem"),
+                     uiOutput(outputId = "candlist_rep"),
+                     
+                     # Add x-axis range slider
+                     sliderInput("X_axis_range", 
+                                 "Choose date range:", 
+                                 min = as.Date("2017-01-01", "%Y-%m-%d"), 
+                                 max = as.Date("2018-12-01", "%Y-%m-%d"), 
+                                 value = c(as.Date("2018-01-01", "%Y-%m-%d"), 
+                                           as.Date("2018-12-01", "%Y-%m-%d")), 
+                                 dragRange = TRUE)
+                     
+                     #dateRangeInput(
+                     #   inputId = "daterange",
+                    #   label = "Date range input: yyyy-mm-dd",
+                    #   start = "2017-01-01",
+                    #   end = "2018-11-06"
+                    # )
+        ),
+        
+        
+        mainPanel(
+          # Add descriptive table for number donations and total per party
+          dataTableOutput('donations_table'),
+          
+          plotOutput("avg_trends"),
+          # Add y-axis range slider
+          sliderInput("Y_axis_range", 
+                      "Choose Average Donation (y-axis) range:", 
+                      min = 0, max = 10000, 
+                      value = c(0, 5000), step = 500,
+                      pre = "$", sep = ",",
+                      dragRange = TRUE),
+          
+          
+          plotOutput("cum_trends"), 
+          # Add y-axis range slider
+          sliderInput("Y_axis_range_cum", 
+                      "Choose Cumulative Donation (y-axis) range:", 
+                      min = 0, max = 10000000, 
+                      value = c(0, 5000000), step = 1000,
+                      pre = "$", sep = ",",
+                      dragRange = TRUE),
+          
+          plotOutput("top_cities"),
+          sliderInput(inputId = "num_cities", 
+                      label = "Select the number of top cities to display",
+                      min = 1, 
+                      max = 10, 
+                      value = 2), 
+          
+          plotOutput("top_occ"),
+          sliderInput(inputId = "num_occ", 
+                      label = "Select the number of top occupations to display",
+                      min = 1, 
+                      max = 8, 
+                      value = 2)
+          
+        )
+      )
     )
   )
 )
