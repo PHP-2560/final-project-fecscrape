@@ -39,7 +39,6 @@ ui = fluidPage(
                              max = as.Date("2018-12-01", "%Y-%m-%d"), 
                              value = c(as.Date("2018-01-01", "%Y-%m-%d"), 
                                        as.Date("2018-12-01", "%Y-%m-%d")), 
-                             animate = TRUE,
                              dragRange = TRUE)
                  
                  #dateRangeInput(
@@ -60,7 +59,7 @@ ui = fluidPage(
       sliderInput("Y_axis_range", 
                   "Choose Average Donation (y-axis) range:", 
                   min = 0, max = 10000, 
-                  value = c(0, 5000), step = 1000,
+                  value = c(0, 5000), step = 500,
                   pre = "$", sep = ",",
                   dragRange = TRUE),
       
@@ -70,7 +69,7 @@ ui = fluidPage(
       sliderInput("Y_axis_range_cum", 
                   "Choose Cumulative Donation (y-axis) range:", 
                   min = 0, max = 10000000, 
-                  value = c(0, 5000000), step = 50000,
+                  value = c(0, 5000000), step = 1000,
                   pre = "$", sep = ",",
                   dragRange = TRUE),
       
@@ -105,7 +104,11 @@ server = function(input, output) {
       summarise(Total = sum(contribution_receipt_amount)) %>%
       arrange(desc(Total)) # put the most $$$ candidates first
     candidates = unique(candidates$candidate)
-    radioButtons("candidates_dem", "Pick one Democratic candidate", candidates)
+    #radioButtons("candidates_dem", "Pick one Democratic candidate", candidates)
+    # Added functionality: multiple candidates can be specified
+    checkboxGroupInput("candidates_dem", label = "Select Democratic candidates", 
+                       choices = candidates, 
+                       selected = candidates[1])
   })
   
   output$candlist_rep = renderUI({
@@ -114,7 +117,10 @@ server = function(input, output) {
       summarise(Total = sum(contribution_receipt_amount)) %>%
       arrange(desc(Total))
     candidates = unique(candidates$candidate)
-    radioButtons("candidates_rep", "Pick one Republican candidate", candidates)
+    #radioButtons("candidates_rep", "Pick one Republican candidate", candidates)
+    checkboxGroupInput("candidates_rep", label = "Select Republican candidates", 
+                       choices = candidates, 
+                       selected = candidates[1])
   })
   
   data_trend = reactive({
@@ -127,11 +133,12 @@ server = function(input, output) {
       
       # Donation data cleanup: clean
       donation_table <- df %>%
-        group_by(party) %>%
+        group_by(candidate, party) %>%
         summarise(num_donations = n(), 
                   total_donations_amount = sum(contribution_receipt_amount), 
                   avg_donation = round((total_donations_amount / num_donations), 2)) %>%
-        mutate_at(vars(total_donations_amount:avg_donation), dollar)
+        arrange(num_donations = desc(num_donations)) %>%
+        mutate_at(vars(total_donations_amount:avg_donation), dollar) 
       return(donation_table)
     }
     table_print <- donations_data_table(data_trend())
@@ -147,7 +154,6 @@ server = function(input, output) {
         theme(panel.grid.major = element_line(size = .1, color = "grey"), # Increase size of gridlines
               axis.line = element_line(size = .7, color = "black"), # Increase size of axis lines
               text = element_text(size = 12)) # Increase the font size
-      group_colors = c("#377EB8", "#E41A1C") # blue, red
       
       # Get dates
       dates <- df %>% select(contribution_receipt_date) %>%  mutate(date = as.Date(contribution_receipt_date)) %>%
@@ -157,20 +163,27 @@ server = function(input, output) {
       # Donation data cleanup: clean
       data_clean = df %>%
         mutate(amount = contribution_receipt_amount, date = as.Date(contribution_receipt_date)) %>%
-        select(amount, date, party) %>%
+        select(amount, date, candidate, party) %>%
         mutate(date = as.Date(date))
 
       # Donation data cleanup: average daily
       data_average_daily <- data_clean %>%
-        group_by(party, date) %>%
+        group_by(candidate, date, party) %>%
         summarise(Mean = mean(amount), SD = sd(amount), N = n(), SE = SD / sqrt(N), na.rm = TRUE) %>%
         filter(date >= input$X_axis_range[1] & date <= input$X_axis_range[2] ) # changed input
+      
+      # Specify colors depending on number of candidates allowed
+      group_colors <- data_clean %>% 
+        group_by(candidate, party) %>%
+        distinct(candidate) %>% # just need one row per candidate
+        mutate(color = ifelse(party == "DEM", "#377EB8", "#E41A1C")) %>% # blue for all DEM, red for REP
+        .$color # return vector of just color
 
       # Y-axis range
       Y_axis_range <- c(input$Y_axis_range[1], input$Y_axis_range[2])
       
       plot_average_daily <- ggplot(data_average_daily,
-                                   aes(x = date, y = Mean, group = party, color = party)) +
+                                   aes(x = date, y = Mean, linetype = candidate, color = candidate)) +
         # geom_point() +
         geom_smooth(method = "loess") + # loess
         xlab(label = "Date") + 
@@ -197,7 +210,6 @@ server = function(input, output) {
         theme(panel.grid.major = element_line(size = .1, color = "grey"), # Increase size of gridlines 
               axis.line = element_line(size = .7, color = "black"), # Increase size of axis lines 
               text = element_text(size = 12)) # Increase the font size
-      group_colors = c("#377EB8", "#E41A1C") # blue, red
       
       # Get dates
       dates <- df %>% select(contribution_receipt_date) %>%  mutate(date = as.Date(contribution_receipt_date)) %>%
@@ -207,22 +219,29 @@ server = function(input, output) {
       # Donation data cleanup: clean
       data_clean = df %>% 
         mutate(amount = contribution_receipt_amount, date = as.Date(contribution_receipt_date)) %>%
-        select(amount, date, party) %>%
+        select(amount, date, party, candidate) %>%
         mutate(date = as.Date(date))
       
       # Donation data cleanup: cumulative
       data_cumulative = data_clean %>%
-        group_by(party) %>%
+        group_by(party, candidate) %>%
         filter(date >= input$X_axis_range[1] & date <= input$X_axis_range[2]) %>% # changed
         arrange(date) %>%
         mutate(cum_donation = cumsum(amount))
+      
+      # Specify colors depending on number of candidates allowed
+      group_colors <- data_clean %>% 
+        group_by(candidate, party) %>%
+        distinct(candidate) %>% # just need one row per candidate
+        mutate(color = ifelse(party == "DEM", "#377EB8", "#E41A1C")) %>% # blue for all DEM, red for REP
+        .$color # return vector of just color
       
       # Y-axis range
       Y_axis_range_cum <- c(input$Y_axis_range_cum[1], input$Y_axis_range_cum[2])
       
       plot_cum <- ggplot(data_cumulative,
-                         aes(x = date, y = cum_donation, group = party, color = party)) + 
-        geom_line(size = 1.5) + 
+                         aes(x = date, y = cum_donation, linetype = candidate, color = candidate)) + 
+        geom_line(size = 1) + 
         #geom_smooth(method = "lm", size = 1.5, linetype = "dashed") +
         xlab(label = "Date") +
         scale_x_date(labels = date_format("%b-%Y")) + # month-year
