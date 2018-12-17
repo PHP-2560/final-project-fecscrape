@@ -34,7 +34,7 @@ ui = fluidPage(
                      selectInput(
                        inputId = "state",
                        label = "Choose a State",
-                       c("AL","AK","AZ","AR","CA","CO","CT","DE","FL","GA","HI","ID","IL","IN","IA","KS","KY","LA","ME","MD","MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ","NM","NY","NC","ND","OH","OK","OR","PA","RI","SC","SD","TN","TX","UT","VT","VA","WA","WV","WI","WY")
+                       c("AZ","CA","CT","DE","FL","HI","IN","MA","MD","ME","MI","MN","MO","MS","MT","NE","ND","NJ","NM","NV","NY","TN","TX","UT","WY")
                      ),
                      
                      uiOutput(outputId = "candlist_dem"),
