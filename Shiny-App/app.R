@@ -101,14 +101,18 @@ server = function(input, output) {
   
   output$candlist_dem = renderUI({
     load(paste0("./bulkdata/data/contributoins_",input$state))
-    candidates = df %>% filter(party =="DEM")
+    candidates = df %>% filter(party =="DEM") %>% group_by(candidate) %>% 
+      summarise(Total = sum(contribution_receipt_amount)) %>%
+      arrange(desc(Total)) # put the most $$$ candidates first
     candidates = unique(candidates$candidate)
     radioButtons("candidates_dem", "Pick one Democratic candidate", candidates)
   })
   
   output$candlist_rep = renderUI({
     load(paste0("./bulkdata/data/contributoins_",input$state))
-    candidates = df %>% filter(party =="REP")
+    candidates = df %>% filter(party =="REP") %>% group_by(candidate) %>% 
+      summarise(Total = sum(contribution_receipt_amount)) %>%
+      arrange(desc(Total))
     candidates = unique(candidates$candidate)
     radioButtons("candidates_rep", "Pick one Republican candidate", candidates)
   })
