@@ -131,7 +131,8 @@ server = function(input, output) {
       return(donation_table)
     }
     table_print <- donations_data_table(data_trend())
-    datatable(table_print, options = list(dom = 't'))
+    datatable(table_print, options = list(dom = 't'),
+              caption = 'Donation Descriptives for Specified Date Range')
   })
   
   output$avg_trends = renderPlot({
