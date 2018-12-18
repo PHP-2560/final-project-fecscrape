@@ -3,26 +3,20 @@ README
 Gabri, Pablo, Joey
 December 14, 2018
 
-# fecScrape
+fecScrape
+=========
 
-The fecScrape package provides functions to interface with the [OpenFEC
-API](https://api.open.fec.gov/developers/). OpenFEC API allows you to
-access funding data on candidates and committees. This package allows
-users to scrape individual- and aggregated-level donation data, plot
-these data to examine the timecourse of donation as well as geographic
-spread of donations, and does some basic summary statistics.
+The fecScrape package provides functions to interface with the [OpenFEC API](https://api.open.fec.gov/developers/). OpenFEC API allows you to access funding data on candidates and committees. This package allows users to scrape individual- and aggregated-level donation data, plot these data to examine the timecourse of donation as well as geographic spread of donations, and does some basic summary statistics.
 
-# Thanks
+Thanks
+======
 
-During this class project, we came across another package which inspired
-our own code and thoughts on how to develop this package. Please check
-out the [tidyusafec](https://github.com/stephenholzman/tidyusafec)
-package, written by Stephen Holzman.
+During this class project, we came across another package which inspired our own code and thoughts on how to develop this package. Please check out the [tidyusafec](https://github.com/stephenholzman/tidyusafec) package, written by Stephen Holzman.
 
-# Installation
+Installation
+============
 
-Installation is done locally for now. Make sure that the project is
-specified to fecScrape\_project and that both libraries are installed.
+Installation is done locally for now. Make sure that the project is specified to fecScrape\_project and that both libraries are installed.
 
 ``` r
 library(devtools)
@@ -32,28 +26,67 @@ document() # knits? the package together for use
 library(fecScrape)
 ```
 
-# Functions
+Functions
+=========
 
-| Function Name                  | Description                                                                                                                                                                                                                                                |
-| ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| query\_candidate\_list         | This function returns the list of all candidates that run in the 2018 Senate Election for a given state.                                                                                                                                                   |
-| query\_choose\_cand            | This function allows the user to manually pick 2 opposing candidates (1 Republican and 1 Democrat) from the list retrieved using *query\_candidate\_list* for comparison.                                                                                  |
-| query\_contributions\_all      | This function retrieves all individual level contributions for every candidate in the list provided.                                                                                                                                                       |
-| query\_itemized\_contributions | This function opreates within *query\_contributions\_all* and it retrieves individual contributions when provided with eahc candidate’s principal committees id                                                                                            |
-| query\_openfec                 | This function srapes the FEC websites using FEC aPIs. It operates within the *query\_itemized\_contributions* and the *query\_candidate\_all* higher level functions                                                                                       |
-| plot\_avg\_donation            | This functions elaborates the individual contributions data from the two main candidates selected and plots the average daily donations.                                                                                                                   |
-| plot\_cum\_donation            | This functions elaborates the individual contributions data from the two main candidates selected and plots the cumulative daily donations.                                                                                                                |
-| plot\_top\_cities              | This function plot a graph bar showing individual donations’ origin for the top *n* cities for each of the opposing candiates.                                                                                                                             |
-| plot\_occupations              | This function plot a percentage stacked bar plot showing the shares of the top *n* individual contributors’ occupations. All remaning occupations are automatically grouped in the “others” category (up to 8 different top occupations can be selected.). |
+<table style="width:39%;">
+<colgroup>
+<col width="19%" />
+<col width="19%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Function Name</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>query_candidate_list</td>
+<td>This function returns the list of all candidates that run in the 2018 Senate Election for a given state.</td>
+</tr>
+<tr class="even">
+<td>query_choose_cand</td>
+<td>This function allows the user to manually pick 2 opposing candidates (1 Republican and 1 Democrat) from the list retrieved using <em>query_candidate_list</em> for comparison.</td>
+</tr>
+<tr class="odd">
+<td>query_contributions_all</td>
+<td>This function retrieves all individual level contributions for every candidate in the list provided.</td>
+</tr>
+<tr class="even">
+<td>query_itemized_contributions</td>
+<td>This function opreates within <em>query_contributions_all</em> and it retrieves individual contributions when provided with eahc candidate's principal committees id</td>
+</tr>
+<tr class="odd">
+<td>query_openfec</td>
+<td>This function srapes the FEC websites using FEC aPIs. It operates within the <em>query_itemized_contributions</em> and the <em>query_candidate_all</em> higher level functions</td>
+</tr>
+<tr class="even">
+<td>plot_avg_donation</td>
+<td>This functions elaborates the individual contributions data from the two main candidates selected and plots the average daily donations.</td>
+</tr>
+<tr class="odd">
+<td>plot_cum_donation</td>
+<td>This functions elaborates the individual contributions data from the two main candidates selected and plots the cumulative daily donations.</td>
+</tr>
+<tr class="even">
+<td>plot_top_cities</td>
+<td>This function plot a graph bar showing individual donations' origin for the top <em>n</em> cities for each of the opposing candiates.</td>
+</tr>
+<tr class="odd">
+<td>plot_occupations</td>
+<td>This function plot a percentage stacked bar plot showing the shares of the top <em>n</em> individual contributors' occupations. All remaning occupations are automatically grouped in the &quot;others&quot; category (up to 8 different top occupations can be selected.).</td>
+</tr>
+</tbody>
+</table>
 
-# Example: 2018 Senate race between Whitehouse & Flanders
+Example: 2018 Senate race between Whitehouse & Flanders
+=======================================================
 
-## Step 1: Scrape candidates running in an election of interest.
+Step 1: Scrape candidates running in an election of interest.
+-------------------------------------------------------------
 
-For our example, we will focus on the recent 2018 Sentate race between
-Sheldon Whitehouse and Robert Flanders of Rhode Island. We wanted to
-choose Texas, since Beto and Cruz raised tens of millions of dollars,
-but the scraping takes a very long time\!
+For our example, we will focus on the recent 2018 Sentate race between Sheldon Whitehouse and Robert Flanders of Rhode Island. We wanted to choose Texas, since Beto and Cruz raised tens of millions of dollars, but the scraping takes a very long time!
 
 ``` r
 # Find and select candidates
@@ -72,7 +105,8 @@ ri_chosen_data <- choose_cand(ri_data, 3, 5) #numbers are optional, script will 
 head(ri_chosen_data)
 ```
 
-## Step 2: Find individual donations for specified candidates
+Step 2: Find individual donations for specified candidates
+----------------------------------------------------------
 
 ``` r
 # Find all individual donations to each candidates' primary committee
@@ -82,28 +116,32 @@ ri_indiv_data <- query_contributions_all(
 )
 ```
 
-## Step 3: Plot average donations
+Step 3: Plot average donations
+------------------------------
 
 ``` r
 ri_avg_donation <- plot_avg_donation(ri_indiv_data)
 ri_avg_donation
 ```
 
-## Step 4: Plot cummulative donations
+Step 4: Plot cummulative donations
+----------------------------------
 
 ``` r
 ri_cum_donation <- plot_cum_donation(ri_indiv_data)
 ri_cum_donation
 ```
 
-## Step 5: Plot cities of donators
+Step 5: Plot cities of donators
+-------------------------------
 
 ``` r
 ri_cities_donation <- plot_top_cities(3, ri_indiv_data)
 ri_cities_donation
 ```
 
-## Step 6: Plot occputations of donators
+Step 6: Plot occputations of donators
+-------------------------------------
 
 ``` r
 ri_occup_donation <- plot_occupations(4, ri_indiv_data)

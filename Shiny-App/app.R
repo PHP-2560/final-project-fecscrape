@@ -21,7 +21,7 @@ ui = fluidPage(
   theme = shinytheme("yeti"),
   
   # Application title
-  titlePanel("FEC individual donations"),
+  titlePanel("FEC Explorer"),
   
   # Tabs
   tabsetPanel(              

@@ -3,6 +3,36 @@ title: "README"
 output: html_document
 ---
 
-# fecScrape
+## Analyzing Contributions for the 2018 Election
 
-The fecScrape package provides functions to interface with the [OpenFEC API](https://api.open.fec.gov/developers/). OpenFEC API allows you to access funding data on candidates and committees. This package allows users to scrape individual- and aggregated-level donation data, plot these data to examine the timecourse of donation as well as geographic spread of donations, and does some basic summary statistics. 
+### Motivation
+
+The Federal Election Comission provides open access for [campaign finance data](https://www.fec.gov/data/). Nevertheless, navigating through the website might be complicated.
+Our goal is to provide an easy way to explore the dataset by providing the user with some intuitive summary statistics presented in the form of tables and plots.
+We will focus on contributions directed towards candidates running for Senate seats in the 2018 election.
+Some questions we will be able to answr with this app:
+
+* What is the average contribution an individual makes at a certain moment of the campaign?
+* How much money have the candidates raised?
+* Where is the comey coming from?
+* What types of workers are contributing the most?
+
+### Usage
+
+* Navigate to the "Analyze" tab.
+* Users will first choose a State that they want to analyze from the left panel.
+* Next, a list for the corresponding Democrat and Republican candidates will appear. Candidates apperaring at the top of the list are the ones that received more donations overall.
+* Finally, the timeframe can be narrowed down to focus on a specific period.
+
+### Outcomes
+
+* Table showing number of donations, total amount and average donation.
+* Average daily donations plot. A slider allows to adjust the scale of the y-axis.
+* Cumulative daily donations plot. A slider allows to adjust the scale of the y-axis.
+* Bar plot showing individual donations by city of origin. A slider allows to adjust the number of cities displayed.
+* Stacked bar plot showing the shares of the top individual donations by contributor occupation. A slider allows to adjust the number of occupations displayed.
+
+### Authors
+* Gabirele Borg
+* Pablo Garriga
+* Joseph Heffner
