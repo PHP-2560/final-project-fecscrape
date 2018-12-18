@@ -34,7 +34,7 @@ ui = fluidPage(
                      selectInput(
                        inputId = "state",
                        label = "Choose a State",
-                       c("AZ","CA","CT","DE","FL","HI","IN","MA","MD","ME","MI","MN","MO","MS","MT","NE","ND","NJ","NM","NV","NY","TN","TX","UT","WY")
+                       c("AZ","CA","CT","DE","FL","HI","IN","MA","MD","ME","MI","MN","MO","MS","MT","NE","ND","NJ","NM","NV","NY","TN","TX")
                      ),
                      
                      uiOutput(outputId = "candlist_dem"),
@@ -270,15 +270,31 @@ server = function(input, output) {
   
   output$top_cities <- renderPlot({
     plot_top_cities <- function(n, df) {
+      
+      # limit plot to top two candidates
+      top_rep_candidate <- df %>%
+        filter(party == "REP") %>%
+        group_by(candidate) %>%
+        summarise(Total = sum(contribution_receipt_amount)) %>%
+        arrange(desc(Total)) %>%
+        filter(row_number() == 1) # only take top candidate
+      
+      top_dem_candidate <- df %>%
+        filter(party == "DEM") %>%
+        group_by(candidate) %>%
+        summarise(Total = sum(contribution_receipt_amount)) %>%
+        arrange(desc(Total)) %>%
+        filter(row_number() == 1) # only take top candidate
+      
       #aggregate by city
       citydf <- df %>%
+        filter(candidate == top_dem_candidate$candidate | candidate == top_rep_candidate$candidate) %>% # only top 2
         mutate(city_state = paste0(contributor_city, ", ", contributor_state)) %>%
         group_by(candidate, city_state) %>%
         summarize(party = first(party) , count = n(), total = sum(contribution_receipt_amount, na.rm = T), average = mean(contribution_receipt_amount, na.rm = T), sd = sd(contribution_receipt_amount, na.rm = T), min = min(contribution_receipt_amount, na.rm = T), max = max(contribution_receipt_amount, na.rm = T)) %>%
         arrange(desc(total)) %>%
         top_n(n, total)
-      
-      citydf
+      #citydf
       
       ## GRAPH
       # set theme
@@ -328,16 +344,37 @@ server = function(input, output) {
   output$top_occ <- renderPlot({
     plot_occupations <- function(n, df) {
       
-      if (n >= 8 ) n = 8
+      if (n >= 8) {
+        n = 8
+      } else {
+        n = n
+      }
+      
+      # limit plot to top two candidates
+      top_rep_candidate <- df %>%
+        filter(party == "REP") %>%
+        group_by(candidate) %>%
+        summarise(Total = sum(contribution_receipt_amount)) %>%
+        arrange(desc(Total)) %>%
+        filter(row_number() == 1) # only take top candidate
+      
+      top_dem_candidate <- df %>%
+        filter(party == "DEM") %>%
+        group_by(candidate) %>%
+        summarise(Total = sum(contribution_receipt_amount)) %>%
+        arrange(desc(Total)) %>%
+        filter(row_number() == 1) # only take top candidate
       
       #compute total donations by party
       totdon<-df %>%
+        filter(candidate == top_dem_candidate$candidate | candidate == top_rep_candidate$candidate) %>% # only top 2
         group_by(candidate) %>%
         summarize(count1 = n(), tot = sum(contribution_receipt_amount))
       #totdon
       
       #compute total donation for top 5 occupations for each party
       tottop<-df %>%
+        filter(candidate == top_dem_candidate$candidate | candidate == top_rep_candidate$candidate) %>% # only top 2
         mutate(city_state = paste0(contributor_city, ", ", contributor_state)) %>%
         group_by(candidate, contributor_occupation) %>%
         summarize(count = n(), total_donations = sum(contribution_receipt_amount)) %>%
@@ -357,6 +394,7 @@ server = function(input, output) {
       
       #prepare summary stats
       topocc_data<-df %>%
+        filter(candidate == top_dem_candidate$candidate | candidate == top_rep_candidate$candidate) %>% # only top 2
         group_by(candidate, contributor_occupation) %>%
         summarize(party = first(party) , count = n(), total = sum(contribution_receipt_amount, na.rm = T), average = mean(contribution_receipt_amount, na.rm = T), sd = sd(contribution_receipt_amount, na.rm = T), min = min(contribution_receipt_amount, na.rm = T), max = max(contribution_receipt_amount, na.rm = T)) %>%
         arrange(desc(total)) %>%
