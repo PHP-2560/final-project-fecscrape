@@ -83,17 +83,17 @@ ui = fluidPage(
           
           plotOutput("top_cities"),
           sliderInput(inputId = "num_cities", 
-                      label = "Select the number of top cities to display",
+                      label = "Select the number of top cities for each candidate to display",
                       min = 1, 
                       max = 10, 
                       value = 2), 
           
-          plotOutput("top_occ"),
-          sliderInput(inputId = "num_occ", 
-                      label = "Select the number of top occupations to display",
-                      min = 1, 
-                      max = 8, 
-                      value = 2)
+          plotOutput("top_occ")#,
+          # sliderInput(inputId = "num_occ", 
+          #             label = "Select the number of top occupations to display",
+          #             min = 1, 
+          #             max = 8, 
+          #             value = 2)
           
         )
       )
@@ -441,7 +441,7 @@ server = function(input, output) {
       
       return(plot_final)
     }
-    plot_occupations(input$num_occ,data_trend())
+    plot_occupations(5,data_trend())
   })
   
   

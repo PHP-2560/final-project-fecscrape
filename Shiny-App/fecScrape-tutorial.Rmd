@@ -31,7 +31,7 @@ Some questions we will be able to answr with this app:
 * Average daily donations plot. A slider allows to adjust the scale of the y-axis to account for outliers, small trends, or changes in donations for different candidates. 
 * Cumulative daily donations plot. A slider allows to adjust the scale of the y-axis like before. 
 * Bar plot showing individual donations by city of origin. A slider allows to adjust the number of cities displayed.
-* Stacked bar plot showing the shares of the top individual donations by contributor occupation. A slider allows to adjust the number of occupations displayed.
+* Stacked bar plot showing the shares of the top individual donations by contributor occupation. We have fixed the number of occupations to 5. 
 
 ### Authors
 * Gabirele Borg
