@@ -30,7 +30,7 @@ ui = fluidPage(
     
     tabPanel(title = "Analysis",
       sidebarLayout(
-        sidebarPanel("our inputs will go here",
+        sidebarPanel("Please select a State to start:",
                      selectInput(
                        inputId = "state",
                        label = "Choose a State",

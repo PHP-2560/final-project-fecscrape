@@ -7,13 +7,13 @@ output: html_document
 
 ### Motivation
 
-The Federal Election Comission provides open access for [campaign finance data](https://www.fec.gov/data/). Nevertheless, navigating through the website might be complicated.
-Our goal is to provide an easy way to explore the dataset by providing the user with some intuitive summary statistics presented in the form of tables and plots.
-We will focus on contributions directed towards candidates running for Senate seats in the 2018 election.
+The Federal Election Comission provides open access for [campaign finance data](https://www.fec.gov/data/). Nevertheless, navigating through the website might be complicated and interfacing with their [OpenAPI](https://api.open.fec.gov/developers/) can be tricky.
+Our goal is to provide an easy way to explore the dataset by providing the user with some intuitive summary statistics presented in the form of tables and plots. Specifically, we wanted users to be able to examine individuals' political donations over time rather than simply aggregated summaries. 
+We will focus on contributions directed towards candidates running for *Senate* seats in the 2018 election.
 Some questions we will be able to answr with this app:
 
 * What is the average contribution an individual makes at a certain moment of the campaign?
-* How much money have the candidates raised?
+* How much money have the candidates raised? How does this amount change over time?
 * Where is the comey coming from?
 * What types of workers are contributing the most?
 
@@ -21,14 +21,15 @@ Some questions we will be able to answr with this app:
 
 * Navigate to the "Analyze" tab.
 * Users will first choose a State that they want to analyze from the left panel.
-* Next, a list for the corresponding Democrat and Republican candidates will appear. Candidates apperaring at the top of the list are the ones that received more donations overall.
-* Finally, the timeframe can be narrowed down to focus on a specific period.
+* Next, a list for the corresponding Democrat and Republican candidates in that state will appear. Candidates are ordered by total donations in the specified date range. 
+* We have added functionality such that multiple Democrat and Republican candidates can be selected, but keep in mind donation data might be sparse for unsuccessful candidates. 
+* Finally, the timeframe can be narrowed down to focus on a specific period using the slider. 
 
 ### Outcomes
 
 * Table showing number of donations, total amount and average donation.
-* Average daily donations plot. A slider allows to adjust the scale of the y-axis.
-* Cumulative daily donations plot. A slider allows to adjust the scale of the y-axis.
+* Average daily donations plot. A slider allows to adjust the scale of the y-axis to account for outliers, small trends, or changes in donations for different candidates. 
+* Cumulative daily donations plot. A slider allows to adjust the scale of the y-axis like before. 
 * Bar plot showing individual donations by city of origin. A slider allows to adjust the number of cities displayed.
 * Stacked bar plot showing the shares of the top individual donations by contributor occupation. A slider allows to adjust the number of occupations displayed.
 
