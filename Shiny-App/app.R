@@ -1,4 +1,4 @@
-#SHINY APP
+# fecScrape Shiny App
 
 #**************************************************************
 # APP SETUP
@@ -10,59 +10,93 @@ library(ggplot2)
 library(dplyr)
 library(scales)
 library(shinythemes)
+library(DT) # for datatables 
 
-# load(paste0("./bulkdata/data/contributoins_","CA"))
 #**************************************************************
 # UI
 #**************************************************************
 
 # Begin fluidPage
 ui = fluidPage(
-  theme = shinytheme("cerulean"),
-
-  titlePanel("FEC individual donations"),
+  theme = shinytheme("yeti"),
   
+  # Application title
+  titlePanel("FEC Explorer"),
   
-  sidebarLayout(
+  # Tabs
+  tabsetPanel(              
+    tabPanel(title = "Intro", 
+      includeMarkdown("./fecScrape-tutorial.Rmd")),
     
-    sidebarPanel("our inputs will go here",
-                 
-      selectInput(
-        inputId = "state",
-        label = "Choose a State",
-        c("AL","AK","AZ","AR","CA","CO","CT","DE","FL","GA","HI","ID","IL","IN","IA","KS","KY","LA","ME","MD","MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ","NM","NY","NC","ND","OH","OK","OR","PA","RI","SC","SD","TN","TX","UT","VT","VA","WA","WV","WI","WY")
-      ),
-      
-      uiOutput(outputId = "candlist_dem"),
-      uiOutput(outputId = "candlist_rep"),
-      
-      dateRangeInput(
-        inputId = "daterange",
-        label = "Date range input: yyyy-mm-dd",
-        start = "2017-01-01",
-        end = "2018-11-06"
+    tabPanel(title = "Analysis",
+      sidebarLayout(
+        sidebarPanel("Please select a State to start:",
+                     selectInput(
+                       inputId = "state",
+                       label = "Choose a State",
+                       c("AZ","CA","CT","DE","FL","HI","IN","MA","MD","ME","MI","MN","MO","MS","MT","NE","ND","NJ","NM","NV","NY","TN","TX")
+                     ),
+                     
+                     uiOutput(outputId = "candlist_dem"),
+                     uiOutput(outputId = "candlist_rep"),
+                     
+                     # Add x-axis range slider
+                     sliderInput("X_axis_range", 
+                                 "Choose date range:", 
+                                 min = as.Date("2017-01-01", "%Y-%m-%d"), 
+                                 max = as.Date("2018-12-01", "%Y-%m-%d"), 
+                                 value = c(as.Date("2018-01-01", "%Y-%m-%d"), 
+                                           as.Date("2018-12-01", "%Y-%m-%d")), 
+                                 dragRange = TRUE)
+                     
+                     #dateRangeInput(
+                     #   inputId = "daterange",
+                    #   label = "Date range input: yyyy-mm-dd",
+                    #   start = "2017-01-01",
+                    #   end = "2018-11-06"
+                    # )
+        ),
+        
+        
+        mainPanel(
+          # Add descriptive table for number donations and total per party
+          dataTableOutput('donations_table'),
+          
+          plotOutput("avg_trends"),
+          # Add y-axis range slider
+          sliderInput("Y_axis_range", 
+                      "Choose Average Donation (y-axis) range:", 
+                      min = 0, max = 10000, 
+                      value = c(0, 5000), step = 500,
+                      pre = "$", sep = ",",
+                      dragRange = TRUE),
+          
+          
+          plotOutput("cum_trends"), 
+          # Add y-axis range slider
+          sliderInput("Y_axis_range_cum", 
+                      "Choose Cumulative Donation (y-axis) range:", 
+                      min = 0, max = 10000000, 
+                      value = c(0, 5000000), step = 1000,
+                      pre = "$", sep = ",",
+                      dragRange = TRUE),
+          
+          plotOutput("top_cities"),
+          sliderInput(inputId = "num_cities", 
+                      label = "Select the number of top cities for each candidate to display",
+                      min = 1, 
+                      max = 10, 
+                      value = 2), 
+          
+          plotOutput("top_occ")#,
+          # sliderInput(inputId = "num_occ", 
+          #             label = "Select the number of top occupations to display",
+          #             min = 1, 
+          #             max = 8, 
+          #             value = 2)
+          
+        )
       )
-    ),
-  
-    
-    mainPanel(
-      plotOutput("avg_trends"),
-      plotOutput("cum_trends"), 
-    
-      plotOutput("top_cities"),
-      sliderInput(inputId = "num_cities", 
-                  label = "Select the number of top cities to display",
-                  min = 1, 
-                  max = 10, 
-                  value = 2), 
-      
-      plotOutput("top_occ"),
-      sliderInput(inputId = "num_occ", 
-                  label = "Select the number of top occupations to display",
-                  min = 1, 
-                  max = 8, 
-                  value = 2)
-
     )
   )
 )
@@ -76,67 +110,107 @@ server = function(input, output) {
   
   output$candlist_dem = renderUI({
     load(paste0("./bulkdata/data/contributoins_",input$state))
-    candidates = df %>% filter(party =="DEM")
+    candidates = df %>% filter(party =="DEM") %>% group_by(candidate) %>% 
+      summarise(Total = sum(contribution_receipt_amount)) %>%
+      arrange(desc(Total)) # put the most $$$ candidates first
     candidates = unique(candidates$candidate)
-    radioButtons("candidates_dem", "Pick one Democratic candidate", candidates)
+    #radioButtons("candidates_dem", "Pick one Democratic candidate", candidates)
+    # Added functionality: multiple candidates can be specified
+    checkboxGroupInput("candidates_dem", label = "Select Democratic candidates", 
+                       choices = candidates, 
+                       selected = candidates[1])
   })
   
   output$candlist_rep = renderUI({
     load(paste0("./bulkdata/data/contributoins_",input$state))
-    candidates = df %>% filter(party =="REP")
+    candidates = df %>% filter(party =="REP") %>% group_by(candidate) %>% 
+      summarise(Total = sum(contribution_receipt_amount)) %>%
+      arrange(desc(Total))
     candidates = unique(candidates$candidate)
-    radioButtons("candidates_rep", "Pick one Republican candidate", candidates)
+    #radioButtons("candidates_rep", "Pick one Republican candidate", candidates)
+    checkboxGroupInput("candidates_rep", label = "Select Republican candidates", 
+                       choices = candidates, 
+                       selected = candidates[1])
   })
   
   data_trend = reactive({
     load(paste0("./bulkdata/data/contributoins_",input$state))
     df[df$candidate %in% c(input$candidates_dem, input$candidates_rep), ]
   })
-
+  
+  output$donations_table <- renderDataTable({
+    donations_data_table <- function(df) {
+      
+      # Donation data cleanup: clean
+      donation_table <- df %>%
+        group_by(candidate, party) %>%
+        summarise(num_donations = n(), 
+                  total_donations_amount = sum(contribution_receipt_amount), 
+                  avg_donation = round((total_donations_amount / num_donations), 2)) %>%
+        arrange(num_donations = desc(num_donations)) %>%
+        mutate_at(vars(total_donations_amount:avg_donation), dollar) 
+      return(donation_table)
+    }
+    table_print <- donations_data_table(data_trend())
+    datatable(table_print, options = list(dom = 't'),
+              caption = 'Donation Descriptives for Specified Date Range')
+  })
+  
   output$avg_trends = renderPlot({
     plot_avg_donation <- function(df) {
-
+      
       # Initialize graph attributes
       graph_theme = theme_bw(base_size = 12) +
         theme(panel.grid.major = element_line(size = .1, color = "grey"), # Increase size of gridlines
               axis.line = element_line(size = .7, color = "black"), # Increase size of axis lines
-              axis.text.x = element_text(angle = 90, hjust = 1), #Rotate text
               text = element_text(size = 12)) # Increase the font size
-      group_colors = c("#377EB8", "#E41A1C") # blue, red
-
+      
       # Get dates
       dates <- df %>% select(contribution_receipt_date) %>%  mutate(date = as.Date(contribution_receipt_date)) %>%
         summarise(min = min(date), max = max(date))
-      title <- paste("From", input$daterange[1], "To", input$daterange[2])
-
+      title <- paste("From", input$X_axis_range[1], "To", input$X_axis_range[2])
+      
       # Donation data cleanup: clean
       data_clean = df %>%
         mutate(amount = contribution_receipt_amount, date = as.Date(contribution_receipt_date)) %>%
-        select(amount, date, party) %>%
+        select(amount, date, candidate, party) %>%
         mutate(date = as.Date(date))
 
       # Donation data cleanup: average daily
       data_average_daily <- data_clean %>%
-        group_by(party, date) %>%
+        group_by(candidate, date, party) %>%
         summarise(Mean = mean(amount), SD = sd(amount), N = n(), SE = SD / sqrt(N), na.rm = TRUE) %>%
-        filter(date >= input$daterange[1] & date <= input$daterange[2] )
+        filter(date >= input$X_axis_range[1] & date <= input$X_axis_range[2] ) # changed input
+      
+      # Specify colors depending on number of candidates allowed
+      group_colors <- data_clean %>% 
+        group_by(candidate, party) %>%
+        distinct(candidate) %>% # just need one row per candidate
+        mutate(color = ifelse(party == "DEM", "#377EB8", "#E41A1C")) %>% # blue for all DEM, red for REP
+        .$color # return vector of just color
 
+      # Y-axis range
+      Y_axis_range <- c(input$Y_axis_range[1], input$Y_axis_range[2])
+      
       plot_average_daily <- ggplot(data_average_daily,
-                                   aes(x = date, y = Mean, group = party, color = party)) +
+                                   aes(x = date, y = Mean, linetype = candidate, color = candidate)) +
         # geom_point() +
         geom_smooth(method = "loess") + # loess
-        xlab(label = "Date") +
-        scale_y_continuous(name = "Average Donation per Contributor") +
-        ggtitle(paste("Senate Donations", title, "\nDaily")) +
+        xlab(label = "Date") + 
+        scale_x_date(labels = date_format("%b-%Y")) + # month-year
+        ylab(label = "Average Donation per Contributor") + 
+        coord_cartesian(ylim = Y_axis_range) + # prevents errors if geom_smooth lower than 0
+        scale_y_continuous(labels = dollar) +
+        ggtitle(paste("Senate Donations", title, "\nDaily Donations Data")) +
         scale_color_manual(values = group_colors) +
         graph_theme
-
+      
       return(plot_average_daily)
     }
-
+    
     plot_avg_donation(data_trend())
   })
-
+  
   
   output$cum_trends = renderPlot({
     plot_cum_donation <- function(df) {
@@ -145,35 +219,46 @@ server = function(input, output) {
       graph_theme = theme_bw(base_size = 12) +
         theme(panel.grid.major = element_line(size = .1, color = "grey"), # Increase size of gridlines 
               axis.line = element_line(size = .7, color = "black"), # Increase size of axis lines 
-              axis.text.x = element_text(angle = 90, hjust = 1), #Rotate text
               text = element_text(size = 12)) # Increase the font size
-      group_colors = c("#377EB8", "#E41A1C") # blue, red
       
       # Get dates
       dates <- df %>% select(contribution_receipt_date) %>%  mutate(date = as.Date(contribution_receipt_date)) %>%
         summarise(min = min(date), max = max(date))
-      title <- paste("From", input$daterange[1], "To", input$daterange[2])
+      title <- paste("From", input$X_axis_range[1], "To", input$X_axis_range[2])
       
       # Donation data cleanup: clean
       data_clean = df %>% 
         mutate(amount = contribution_receipt_amount, date = as.Date(contribution_receipt_date)) %>%
-        select(amount, date, party) %>%
+        select(amount, date, party, candidate) %>%
         mutate(date = as.Date(date))
       
       # Donation data cleanup: cumulative
       data_cumulative = data_clean %>%
-        group_by(party) %>%
-        filter(date >= input$daterange[1] & date <= input$daterange[2]) %>%
+        group_by(party, candidate) %>%
+        filter(date >= input$X_axis_range[1] & date <= input$X_axis_range[2]) %>% # changed
         arrange(date) %>%
         mutate(cum_donation = cumsum(amount))
       
+      # Specify colors depending on number of candidates allowed
+      group_colors <- data_clean %>% 
+        group_by(candidate, party) %>%
+        distinct(candidate) %>% # just need one row per candidate
+        mutate(color = ifelse(party == "DEM", "#377EB8", "#E41A1C")) %>% # blue for all DEM, red for REP
+        .$color # return vector of just color
+      
+      # Y-axis range
+      Y_axis_range_cum <- c(input$Y_axis_range_cum[1], input$Y_axis_range_cum[2])
+      
       plot_cum <- ggplot(data_cumulative,
-                         aes(x = date, y = cum_donation, group = party, color = party)) + 
-        geom_line() + 
-        #geom_smooth(method = "lm", size = 2) + # loess
+                         aes(x = date, y = cum_donation, linetype = candidate, color = candidate)) + 
+        geom_line(size = 1) + 
+        #geom_smooth(method = "lm", size = 1.5, linetype = "dashed") +
         xlab(label = "Date") +
-        scale_y_continuous(name = "Cummulative Donation per Party Candidate") +    
-        ggtitle(paste("Senate Donations", title, "\nDaily")) + 
+        scale_x_date(labels = date_format("%b-%Y")) + # month-year
+        ylab(label = "Cumulative Donation per Party Candidate") + 
+        coord_cartesian(ylim = Y_axis_range_cum) +
+        scale_y_continuous(labels = dollar) +
+        ggtitle(paste("Senate Donations", title, "\nDaily Donations Data")) + 
         scale_color_manual(values = group_colors) +
         graph_theme 
       
@@ -185,15 +270,31 @@ server = function(input, output) {
   
   output$top_cities <- renderPlot({
     plot_top_cities <- function(n, df) {
+      
+      # limit plot to top two candidates
+      top_rep_candidate <- df %>%
+        filter(party == "REP") %>%
+        group_by(candidate) %>%
+        summarise(Total = sum(contribution_receipt_amount)) %>%
+        arrange(desc(Total)) %>%
+        filter(row_number() == 1) # only take top candidate
+      
+      top_dem_candidate <- df %>%
+        filter(party == "DEM") %>%
+        group_by(candidate) %>%
+        summarise(Total = sum(contribution_receipt_amount)) %>%
+        arrange(desc(Total)) %>%
+        filter(row_number() == 1) # only take top candidate
+      
       #aggregate by city
       citydf <- df %>%
+        filter(candidate == top_dem_candidate$candidate | candidate == top_rep_candidate$candidate) %>% # only top 2
         mutate(city_state = paste0(contributor_city, ", ", contributor_state)) %>%
         group_by(candidate, city_state) %>%
         summarize(party = first(party) , count = n(), total = sum(contribution_receipt_amount, na.rm = T), average = mean(contribution_receipt_amount, na.rm = T), sd = sd(contribution_receipt_amount, na.rm = T), min = min(contribution_receipt_amount, na.rm = T), max = max(contribution_receipt_amount, na.rm = T)) %>%
         arrange(desc(total)) %>%
         top_n(n, total)
-      
-      citydf
+      #citydf
       
       ## GRAPH
       # set theme
@@ -243,16 +344,37 @@ server = function(input, output) {
   output$top_occ <- renderPlot({
     plot_occupations <- function(n, df) {
       
-      if (n >= 8 ) n = 8
- 
+      if (n >= 8) {
+        n = 8
+      } else {
+        n = n
+      }
+      
+      # limit plot to top two candidates
+      top_rep_candidate <- df %>%
+        filter(party == "REP") %>%
+        group_by(candidate) %>%
+        summarise(Total = sum(contribution_receipt_amount)) %>%
+        arrange(desc(Total)) %>%
+        filter(row_number() == 1) # only take top candidate
+      
+      top_dem_candidate <- df %>%
+        filter(party == "DEM") %>%
+        group_by(candidate) %>%
+        summarise(Total = sum(contribution_receipt_amount)) %>%
+        arrange(desc(Total)) %>%
+        filter(row_number() == 1) # only take top candidate
+      
       #compute total donations by party
       totdon<-df %>%
+        filter(candidate == top_dem_candidate$candidate | candidate == top_rep_candidate$candidate) %>% # only top 2
         group_by(candidate) %>%
         summarize(count1 = n(), tot = sum(contribution_receipt_amount))
       #totdon
       
       #compute total donation for top 5 occupations for each party
       tottop<-df %>%
+        filter(candidate == top_dem_candidate$candidate | candidate == top_rep_candidate$candidate) %>% # only top 2
         mutate(city_state = paste0(contributor_city, ", ", contributor_state)) %>%
         group_by(candidate, contributor_occupation) %>%
         summarize(count = n(), total_donations = sum(contribution_receipt_amount)) %>%
@@ -272,6 +394,7 @@ server = function(input, output) {
       
       #prepare summary stats
       topocc_data<-df %>%
+        filter(candidate == top_dem_candidate$candidate | candidate == top_rep_candidate$candidate) %>% # only top 2
         group_by(candidate, contributor_occupation) %>%
         summarize(party = first(party) , count = n(), total = sum(contribution_receipt_amount, na.rm = T), average = mean(contribution_receipt_amount, na.rm = T), sd = sd(contribution_receipt_amount, na.rm = T), min = min(contribution_receipt_amount, na.rm = T), max = max(contribution_receipt_amount, na.rm = T)) %>%
         arrange(desc(total)) %>%
@@ -318,10 +441,10 @@ server = function(input, output) {
       
       return(plot_final)
     }
-    plot_occupations(input$num_occ,data_trend())
+    plot_occupations(5,data_trend())
   })
   
-     
+  
 }
 
 shinyApp(ui = ui, server = server)
