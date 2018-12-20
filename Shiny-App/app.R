@@ -59,42 +59,60 @@ ui = fluidPage(
         
         
         mainPanel(
-          # Add descriptive table for number donations and total per party
-          dataTableOutput('donations_table'),
           
-          plotOutput("avg_trends"),
-          # Add y-axis range slider
-          sliderInput("Y_axis_range", 
-                      "Choose Average Donation (y-axis) range:", 
-                      min = 0, max = 10000, 
-                      value = c(0, 5000), step = 500,
-                      pre = "$", sep = ",",
-                      dragRange = TRUE),
+          # Descriptive table for number donations and total per party
+          tags$div(style="margin-bottom:50px;margin-top:10px",
+                   tags$b("Donations"),
+                   br(),
+                   dataTableOutput('donations_table')
+          ),
           
+          # Average daily donations plot
+          tags$div(style="margin-bottom:50px;",
+                   tags$b("Average daily donations"),
+                   br(),
+                   plotOutput("avg_trends"),
+                   # Add y-axis range slider
+                   sliderInput("Y_axis_range", 
+                               "Choose Average Donation (y-axis) range:", 
+                               min = 0, max = 10000, 
+                               value = c(0, 5000), step = 500,
+                               pre = "$", sep = ",",
+                               dragRange = TRUE)
+          ),
           
-          plotOutput("cum_trends"), 
-          # Add y-axis range slider
-          sliderInput("Y_axis_range_cum", 
-                      "Choose Cumulative Donation (y-axis) range:", 
-                      min = 0, max = 10000000, 
-                      value = c(0, 5000000), step = 1000,
-                      pre = "$", sep = ",",
-                      dragRange = TRUE),
+          # Cumulative daily donations plot
+          tags$div(style="margin-bottom:50px;",
+                   tags$b("Cumulative daily donations"),
+                   br(),
+                   plotOutput("cum_trends"), 
+                   # Add y-axis range slider
+                   sliderInput("Y_axis_range_cum", 
+                               "Choose Cumulative Donation (y-axis) range:", 
+                               min = 0, max = 10000000, 
+                               value = c(0, 5000000), step = 1000,
+                               pre = "$", sep = ",",
+                               dragRange = TRUE)
+          ),
           
-          plotOutput("top_cities"),
-          sliderInput(inputId = "num_cities", 
-                      label = "Select the number of top cities for each candidate to display",
-                      min = 1, 
-                      max = 10, 
-                      value = 2), 
+          # Individual donations by city of origin
+          tags$div(style="margin-bottom:50px;",
+                   tags$b("Individual donations by city of origin"),
+                   br(),
+                   plotOutput("top_cities"),
+                   sliderInput(inputId = "num_cities", 
+                               label = "Select the number of top cities to display",
+                               min = 1, 
+                               max = 10, 
+                               value = 2) 
+          ),
           
-          plotOutput("top_occ")#,
-          # sliderInput(inputId = "num_occ", 
-          #             label = "Select the number of top occupations to display",
-          #             min = 1, 
-          #             max = 8, 
-          #             value = 2)
-          
+          # Individual donations by contributor occupation
+          tags$div(style="margin-bottom:50px;",
+                   tags$b("Individual donations by contributor occupation"),
+                   br(),
+                   plotOutput("top_occ")
+          )
         )
       )
     )
@@ -201,7 +219,6 @@ server = function(input, output) {
         ylab(label = "Average Donation per Contributor") + 
         coord_cartesian(ylim = Y_axis_range) + # prevents errors if geom_smooth lower than 0
         scale_y_continuous(labels = dollar) +
-        ggtitle(paste("Senate Donations", title, "\nDaily Donations Data")) +
         scale_color_manual(values = group_colors) +
         graph_theme
       
@@ -258,7 +275,6 @@ server = function(input, output) {
         ylab(label = "Cumulative Donation per Party Candidate") + 
         coord_cartesian(ylim = Y_axis_range_cum) +
         scale_y_continuous(labels = dollar) +
-        ggtitle(paste("Senate Donations", title, "\nDaily Donations Data")) + 
         scale_color_manual(values = group_colors) +
         graph_theme 
       
