@@ -4,19 +4,36 @@
 \alias{query_itemized_contributions}
 \title{Finds individual contributions associated with a list of candidates}
 \usage{
-query_itemized_contributions(data = NULL, api_key = NULL,
-  data_structure = "tidy", contributor_employer = NULL,
-  contributor_name = NULL, contributor_occupation = NULL,
-  sort_null_only = NULL, sort_hide_null = NULL,
-  contributor_id = NULL, max_date = NULL,
-  last_contribution_receipt_date = NULL, contributor_city = NULL,
-  contributor_type = NULL, sort = NULL, min_amount = NULL,
-  contributor_zip = NULL, min_date = NULL, contributor_state = NULL,
-  min_image_number = NULL, last_contributor_aggregate_ytd = NULL,
-  image_number = NULL, max_amount = NULL, committee_id = NULL,
-  last_contribution_receipt_amount = NULL, is_individual = NULL,
-  max_image_number = NULL, two_year_transaction_period = NULL,
-  line_number = NULL)
+query_itemized_contributions(
+  data = NULL,
+  api_key = NULL,
+  data_structure = "tidy",
+  contributor_employer = NULL,
+  contributor_name = NULL,
+  contributor_occupation = NULL,
+  sort_null_only = NULL,
+  sort_hide_null = NULL,
+  contributor_id = NULL,
+  max_date = NULL,
+  last_contribution_receipt_date = NULL,
+  contributor_city = NULL,
+  contributor_type = NULL,
+  sort = NULL,
+  min_amount = NULL,
+  contributor_zip = NULL,
+  min_date = NULL,
+  contributor_state = NULL,
+  min_image_number = NULL,
+  last_contributor_aggregate_ytd = NULL,
+  image_number = NULL,
+  max_amount = NULL,
+  committee_id = NULL,
+  last_contribution_receipt_amount = NULL,
+  is_individual = NULL,
+  max_image_number = NULL,
+  two_year_transaction_period = NULL,
+  line_number = NULL
+)
 }
 \arguments{
 \item{data}{A dataframe or tibble. Usually this will be the returned result of search_candidates(). If a column is called 'committee_id', get_itemized_contributions() will return results for all IDs in that column and will attempt to join data to the result by committee_id.}
